@@ -1,8 +1,8 @@
-# 📝 Notas API
+# Notas API
 
 API REST con interfaz web para gestionar notas personales. Desarrollada con Flask y MariaDB, desplegada con Docker Compose.
 
-## 📋 Descripción
+## Descripción
 
 Aplicación web que permite crear, listar y eliminar notas. Incluye:
 
@@ -12,7 +12,7 @@ Aplicación web que permite crear, listar y eliminar notas. Incluye:
 - **Logs** en formato JSON
 - **Configuración** mediante variables de entorno
 
-## 🏗️ Arquitectura
+## Arquitectura
 ```
 ┌─────────────────┐         ┌─────────────────┐
 │                 │         │                 │
@@ -26,17 +26,12 @@ Aplicación web que permite crear, listar y eliminar notas. Incluye:
    (red interna)                (volumen)
 ```
 
-## 🚀 Requisitos
+## Requisitos
 
-**Para despliegue con contenedores (Recomendado):**
 - Docker (v20.10 o superior)
 - Docker Compose (v2.0 o superior)
 
-**Para desarrollo local:**
-- Python 3.9+
-- MySQL/MariaDB (o usar Docker para la BD)
-
-## 📦 Instalación y ejecución
+## Instalación y ejecución
 
 ### 1. Clonar el repositorio
 ```bash
@@ -63,7 +58,7 @@ Para parar y eliminar los volúmenes (borra los datos):
 docker compose down -v
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
@@ -92,7 +87,7 @@ curl http://localhost:5000/notas
 curl -X DELETE http://localhost:5000/notas/1
 ```
 
-## ⚙️ Configuración
+## Configuración
 
 La aplicación se configura mediante variables de entorno:
 
@@ -106,7 +101,7 @@ La aplicación se configura mediante variables de entorno:
 
 Estas variables están configuradas en `docker-compose.yml`.
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 ```
 notas-api/
 ├── app.py                 # Aplicación Flask
@@ -117,16 +112,16 @@ notas-api/
 └── README.md            # Este archivo
 ```
 
-## 🐳 Dockerfile (Multistage)
+## Dockerfile (Multistage)
 
 El Dockerfile utiliza construcción en múltiples etapas:
 
 1. **Fase builder**: Instala dependencias en imagen completa
 2. **Fase final**: Copia solo lo necesario a imagen slim
 
-Se utiliza una imagen base `slim` en la etapa final para reducir la superficie de ataque y el tamaño, eliminando compiladores y cachés innecesarios. Esto reduce el tamaño de la imagen final (~80MB vs ~500MB).
+Esto reduce el tamaño de la imagen final (~80MB vs ~500MB).
 
-## 📊 Logs
+## Logs
 
 Los logs se emiten por STDOUT en formato JSON:
 ```json
@@ -138,7 +133,7 @@ Para ver los logs:
 docker logs notas-app
 ```
 
-## ✅ Verificación del funcionamiento
+## Verificación del funcionamiento
 
 1. **Aplicación corriendo:**
 ```bash
@@ -157,38 +152,6 @@ docker logs notas-app
    docker logs notas-app | grep "level"
 ```
 
-## 🛠️ Desarrollo (Ejecución local sin contenedor)
+## Autor
 
-Si deseas ejecutar la aplicación Python directamente en tu máquina:
-
-### 1. Requisitos previos
-
-- Python 3.9+ instalado
-- Una base de datos MySQL/MariaDB corriendo en `localhost:3306`
-
-> **Tip:** Puedes usar `docker compose up db -d` para levantar solo la BD con Docker.
-
-### 2. Configuración del entorno
-```bash
-# Crear entorno virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
-
-# Instalar dependencias
-pip install -r requirements.txt
-```
-
-### 3. Variables de entorno y ejecución
-```bash
-export DB_HOST=localhost
-export DB_USER=notasuser
-export DB_PASSWORD=notaspass
-export DB_NAME=notasdb
-
-python app.py
-```
-
-## 📝 Autor
-
-Antonio Prado Lorenzo - KeepCoding DevOps Bootcamp
+Antonio Prado Lorenzo - KeepCoding DevOps Bootcamp (Módulo Docker)
