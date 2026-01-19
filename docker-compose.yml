@@ -1,7 +1,7 @@
 services:
   # ===== BASE DE DATOS =====
   db:
-    image: mariadb:10
+    image: mariadb:11
     container_name: notas-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
