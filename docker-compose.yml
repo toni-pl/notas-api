@@ -1,0 +1,44 @@
+services:
+  # ===== BASE DE DATOS =====
+  db:
+    image: mariadb:10
+    container_name: notas-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: notasdb
+      MYSQL_USER: notasuser
+      MYSQL_PASSWORD: notaspass
+    ports:
+      - "3306:3306"
+    volumes:
+      - datos-mariadb:/var/lib/mysql
+    networks:
+      - notas-network
+    restart: unless-stopped
+
+  # ===== APLICACIÓN =====
+  app:
+    build: .
+    container_name: notas-app
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: notasuser
+      DB_PASSWORD: notaspass
+      DB_NAME: notasdb
+    depends_on:
+      - db
+    networks:
+      - notas-network
+    restart: unless-stopped
+
+# ===== VOLÚMENES =====
+volumes:
+  datos-mariadb:
+
+# ===== REDES =====
+networks:
+  notas-network:
+    driver: bridge
