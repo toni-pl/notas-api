@@ -1,8 +1,10 @@
 import os
+import time
 import logging
 from flask import Flask, request, jsonify
 
 import mysql.connector
+from mysql.connector import Error
 
 # Configuración de logs en formato JSON
 logging.basicConfig(
@@ -32,20 +34,34 @@ def get_db_connection():
 
 def init_db():
     """Crea la tabla si no existe"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS notas (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            titulo VARCHAR(255) NOT NULL,
-            contenido TEXT,
-            creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    cursor.close()
-    conn.close()
-    logger.info("Base de datos inicializada")
+    for intento in range(10):
+        conn = None
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS notas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    titulo VARCHAR(255) NOT NULL,
+                    contenido TEXT,
+                    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            conn.commit()
+            cursor.close()
+            conn.close()
+            logger.info("Base de datos inicializada")
+            return
+        except Error as exc:
+            logger.warning(f"DB no disponible, reintentando ({intento + 1}/10): {exc}")
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+            time.sleep(2)
+    logger.error("No se pudo inicializar la base de datos")
+    raise SystemExit(1)
 
 # ============== INTERFAZ WEB ==============
 
@@ -370,12 +386,16 @@ def index():
 def listar_notas():
     """Lista todas las notas"""
     logger.info("Listando notas")
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM notas ORDER BY creado_en DESC')
-    notas = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM notas ORDER BY creado_en DESC')
+        notas = cursor.fetchall()
+        cursor.close()
+        conn.close()
+    except Error as exc:
+        logger.error(f"Error listando notas: {exc}")
+        return jsonify({'error': 'Error de base de datos'}), 500
     
     # Convertir datetime a string para JSON
     for nota in notas:
@@ -386,7 +406,7 @@ def listar_notas():
 @app.route('/notas', methods=['POST'])
 def crear_nota():
     """Crea una nueva nota"""
-    datos = request.get_json()
+    datos = request.get_json(silent=True) or {}
     titulo = datos.get('titulo', '')
     contenido = datos.get('contenido', '')
     
@@ -394,16 +414,20 @@ def crear_nota():
         logger.warning("Intento de crear nota sin título")
         return jsonify({'error': 'El título es obligatorio'}), 400
     
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO notas (titulo, contenido) VALUES (%s, %s)',
-        (titulo, contenido)
-    )
-    conn.commit()
-    nota_id = cursor.lastrowid
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO notas (titulo, contenido) VALUES (%s, %s)',
+            (titulo, contenido)
+        )
+        conn.commit()
+        nota_id = cursor.lastrowid
+        cursor.close()
+        conn.close()
+    except Error as exc:
+        logger.error(f"Error creando nota: {exc}")
+        return jsonify({'error': 'Error de base de datos'}), 500
     
     logger.info(f"Nota creada con ID: {nota_id}")
     return jsonify({'id': nota_id, 'mensaje': 'Nota creada'}), 201
@@ -411,13 +435,17 @@ def crear_nota():
 @app.route('/notas/<int:id>', methods=['DELETE'])
 def borrar_nota(id):
     """Borra una nota por su ID"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM notas WHERE id = %s', (id,))
-    conn.commit()
-    filas_afectadas = cursor.rowcount
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM notas WHERE id = %s', (id,))
+        conn.commit()
+        filas_afectadas = cursor.rowcount
+        cursor.close()
+        conn.close()
+    except Error as exc:
+        logger.error(f"Error borrando nota: {exc}")
+        return jsonify({'error': 'Error de base de datos'}), 500
     
     if filas_afectadas == 0:
         logger.warning(f"Intento de borrar nota inexistente: {id}")

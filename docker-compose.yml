@@ -4,10 +4,10 @@ services:
     image: mariadb:11
     container_name: notas-db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: notasdb
-      MYSQL_USER: notasuser
-      MYSQL_PASSWORD: notaspass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -15,6 +15,11 @@ services:
     networks:
       - notas-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   # ===== APLICACIÓN =====
   app:
@@ -25,11 +30,12 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 3306
-      DB_USER: notasuser
-      DB_PASSWORD: notaspass
-      DB_NAME: notasdb
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - notas-network
     restart: unless-stopped

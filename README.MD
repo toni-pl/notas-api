@@ -99,7 +99,13 @@ La aplicación se configura mediante variables de entorno:
 | `DB_PASSWORD` | Contraseña de la base de datos | `secret` |
 | `DB_NAME` | Nombre de la base de datos | `notasdb` |
 
-Estas variables están configuradas en `docker-compose.yml`.
+Estas variables deben configurarse en un fichero `.env` (no versionado) o exportarse en el entorno.
+En el repositorio hay un `.env.example` con placeholders.
+
+Para crear el fichero `.env` a partir del ejemplo:
+```bash
+cp .env.example .env
+```
 
 ## Estructura del proyecto
 ```
@@ -131,6 +137,11 @@ Los logs se emiten por STDOUT en formato JSON:
 Para ver los logs:
 ```bash
 docker logs notas-app
+```
+
+Para ver los logs de la base de datos:
+```bash
+docker logs notas-db
 ```
 
 ## Verificación del funcionamiento
