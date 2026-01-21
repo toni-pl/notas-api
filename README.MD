@@ -31,24 +31,50 @@ Aplicación web que permite crear, listar y eliminar notas. Incluye:
 - Docker (v20.10 o superior)
 - Docker Compose (v2.0 o superior)
 
+## Configuración
+
+La aplicación se configura mediante variables de entorno:
+
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `DB_HOST` | Host de la base de datos | `localhost` |
+| `DB_PORT` | Puerto de la base de datos | `3306` |
+| `DB_USER` | Usuario de la base de datos | `root` |
+| `DB_PASSWORD` | Contraseña de la base de datos | `secret` |
+| `DB_NAME` | Nombre de la base de datos | `notasdb` |
+
+Estas variables deben configurarse en un fichero `.env` (no versionado) o exportarse en el entorno.
+En el repositorio hay un `.env.example` con placeholders.
+
+Para crear el fichero `.env` a partir del ejemplo:
+```bash
+cp .env.example .env
+```
+
 ## Instalación y ejecución
 
 ### 1. Clonar el repositorio
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/toni-pl/notas-api.git
 cd notas-api
 ```
 
-### 2. Levantar la aplicación
+### 2. Configurar variables de entorno
+```bash
+cp .env.example .env
+# Edita .env y rellena MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD
+```
+
+### 3. Levantar la aplicación
 ```bash
 docker compose up --build
 ```
 
-### 3. Acceder a la aplicación
+### 4. Acceder a la aplicación
 
 Abre el navegador en: **http://localhost:5000**
 
-### 4. Parar la aplicación
+### 5. Parar la aplicación
 ```bash
 docker compose down
 ```
@@ -87,26 +113,6 @@ curl http://localhost:5000/notas
 curl -X DELETE http://localhost:5000/notas/1
 ```
 
-## Configuración
-
-La aplicación se configura mediante variables de entorno:
-
-| Variable | Descripción | Valor por defecto |
-|----------|-------------|-------------------|
-| `DB_HOST` | Host de la base de datos | `localhost` |
-| `DB_PORT` | Puerto de la base de datos | `3306` |
-| `DB_USER` | Usuario de la base de datos | `root` |
-| `DB_PASSWORD` | Contraseña de la base de datos | `secret` |
-| `DB_NAME` | Nombre de la base de datos | `notasdb` |
-
-Estas variables deben configurarse en un fichero `.env` (no versionado) o exportarse en el entorno.
-En el repositorio hay un `.env.example` con placeholders.
-
-Para crear el fichero `.env` a partir del ejemplo:
-```bash
-cp .env.example .env
-```
-
 ## Estructura del proyecto
 ```
 notas-api/
@@ -115,7 +121,7 @@ notas-api/
 ├── Dockerfile            # Construcción de imagen (Multistage)
 ├── docker-compose.yml    # Orquestación de servicios
 ├── .gitignore           # Archivos ignorados por Git
-└── README.md            # Este archivo
+└── README.MD            # Este archivo
 ```
 
 ## Dockerfile (Multistage)
